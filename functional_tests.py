@@ -40,6 +40,7 @@ class NewVisitorTest(unittest.TestCase):
         rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
                 any(row.text == '1: 공작깃털 사기' for row in rows),
+                f'새로 입력한 아이템이 테이블에 표시되지 않음.\n테이블 내용: {table.text}'
         )
 
         # 추가 아이템을 입력할 수 있는 텍스트 상자가 존재한다
