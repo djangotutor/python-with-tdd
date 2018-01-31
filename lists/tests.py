@@ -21,6 +21,10 @@ class HomePageTest(TestCase):
         self.assertIn('새 아이템', response.content.decode('utf8'))
         self.assertTemplateUsed(response, 'home.html')
 
+    def test_only_saves_items_when_necessary(self):
+        self.client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
+
 
 class ItemModelTest(TestCase):
     def test_saving_and_retrieving_items(self):
