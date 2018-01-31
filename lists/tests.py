@@ -14,6 +14,10 @@ class HomePageTest(TestCase):
                 data={'item_text': '새 아이템'}
         )
 
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, '새 아이템')
+
         self.assertIn('새 아이템', response.content.decode('utf8'))
         self.assertTemplateUsed(response, 'home.html')
 
