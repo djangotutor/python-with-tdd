@@ -31,6 +31,15 @@ class HomePageTest(TestCase):
         self.client.get('/')
         self.assertEqual(Item.objects.count(), 0)
 
+    def test_displays_all_list_items(self):
+        Item.objects.create(text='아이템 1')
+        Item.objects.create(text='아이템 2')
+
+        response = self.client.get('/')
+
+        self.assertIn('아이템 1', response.content.decode('utf8'))
+        self.assertIn('아이템 2', response.content.decode('utf8'))
+
 
 class ItemModelTest(TestCase):
     def test_saving_and_retrieving_items(self):
