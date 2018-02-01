@@ -9,7 +9,7 @@ class HomePageTest(TestCase):
         self.assertTemplateUsed(response, 'home.html')
 
     def test_can_save_a_POST_request(self):
-        response = self.client.post(
+        self.client.post(
                 '/',
                 data={'item_text': '새 아이템'}
         )
@@ -18,8 +18,14 @@ class HomePageTest(TestCase):
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, '새 아이템')
 
-        self.assertIn('새 아이템', response.content.decode('utf8'))
-        self.assertTemplateUsed(response, 'home.html')
+    def test_redirects_after_POST(self):
+        response = self.client.post(
+                '/',
+                data={'item_text': '새 아이템'}
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
 
     def test_only_saves_items_when_necessary(self):
         self.client.get('/')
@@ -42,4 +48,3 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, '첫번째 아이템')
         self.assertEqual(second_saved_item.text, '두번째 아이템')
-
