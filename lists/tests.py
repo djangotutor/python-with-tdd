@@ -60,3 +60,14 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, '첫번째 아이템')
         self.assertEqual(second_saved_item.text, '두번째 아이템')
+
+
+class ListViewTest(TestCase):
+    def test_displays_all_items(self):
+        Item.objects.create(text='아이템 1')
+        Item.objects.create(text='아이템 2')
+
+        response = self.client.get('/lists/the-only-list-in-the-world/')
+
+        self.assertContains(response, '아이템 1')
+        self.assertContains(response, '아이템 2')
