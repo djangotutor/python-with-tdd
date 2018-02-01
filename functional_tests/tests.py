@@ -28,7 +28,7 @@ class NewVisitorTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
+    def test_can_start_a_list_for_one_user(self):
         # 에디스는 작업 목록 온라인 앱이 나왔다는 소식을 듣고
         # 해당 웹 사이트를 확인한다
         self.browser.get(self.live_server_url)
@@ -63,11 +63,54 @@ class NewVisitorTest(LiveServerTestCase):
         self.wait_for_row_in_list_table('1: 공작깃털 사기')
         self.wait_for_row_in_list_table('2: 공작깃털을 이용해서 그물 만들기')
 
-        # 에디스는 사이트가 입력한 목록을 저장하고 있는지 궁금하다
-        # 사이트는 그녀를 위한 특정 URL을 생성해준다
-        # 이 때 URL에 대한 설명도 함께 제공된다
-        self.fail('테스트를 끝내자!!!')
-
-        # 해당 URL에 접속하면 그녀가 만든 작업 목록이 그대로 있는 것을 확인할 수 있다
-
         # 만족하고 잠자리에 든다
+
+    def test_multiple_users_can_start_lists_at_different_urls(self):
+        # 에디스가 작업을 추가한다
+        self.browser.get(self.live_server_url)
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('공작깃털 사기')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: 공작깃털 사기')
+
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('공작깃털로 그물 만들기')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: 공작깃털 사기')
+        self.wait_for_row_in_list_table('2: 공작깃털로 그물 만들기')
+
+        # 그녀는 자신을 위한 고유한 URL이 있음을 알게 된다
+        edith_list_url = self.browser.current_url
+        self.assertRegex(edith_list_url, '/lists/.+')
+
+        # 새로운 사용자 프란시스가 방문한다
+
+        ## 에디스의 정보가 쿠키 등으로 유입되는 것을 방지하기 위해서
+        ## 새로운 브라우저 세션을 사용한다
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        # 프란시스가 사이트에 접속하고 에디스의 리스트 흔적은 없다
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('공작깃털 사기', page_text)
+        self.assertNotIn('공작깃털로 그물 만들기', page_text)
+
+        # 프란시스는 새로운 아이템을 입력한다
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('우유 사기')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: 우유 사기')
+
+        # 프란시스는 자신의 고유 URL를 얻게 된다
+        francis_list_url = self.browser.current_url
+        self.assertRegex(francis_list_url, '/lists/.+')
+        self.assertNotEqual(francis_list_url, edith_list_url)
+
+        # 에디스의 흔적이 없음을 다시 확인한다
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('공작깃털 사기', page_text)
+        self.assertNotIn('공작깃털로 그물 만들기', page_text)
+        self.assertIn('우유 사기', page_text)
+
+        # 둘 다 만족하고 잠자리에 든다
