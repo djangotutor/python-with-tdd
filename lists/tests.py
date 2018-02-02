@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from lists.models import Item
+from lists.models import List
 
 
 class HomePageTest(TestCase):
@@ -9,14 +10,22 @@ class HomePageTest(TestCase):
         self.assertTemplateUsed(response, 'home.html')
 
 
-class ItemModelTest(TestCase):
+class ListAndItemModelTest(TestCase):
     def test_saving_and_retrieving_items(self):
+        list_ = List()
+        list_.save()
+
         first_item = Item()
         first_item.text = '첫번째 아이템'
+        first_item.list = list_
         first_item.save()
         second_item = Item()
         second_item.text = '두번째 아이템'
+        second_item.list = list_
         second_item.save()
+
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
 
         saved_items = Item.objects.all()
 
@@ -24,13 +33,16 @@ class ItemModelTest(TestCase):
         first_saved_item = saved_items[0]
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, '첫번째 아이템')
+        self.assertEqual(first_saved_item.list, list_)
         self.assertEqual(second_saved_item.text, '두번째 아이템')
+        self.assertEqual(second_saved_item.list, list_)
 
 
 class ListViewTest(TestCase):
     def test_displays_all_items(self):
-        Item.objects.create(text='아이템 1')
-        Item.objects.create(text='아이템 2')
+        list_ = List.objects.create()
+        Item.objects.create(text='아이템 1', list=list_)
+        Item.objects.create(text='아이템 2', list=list_)
 
         response = self.client.get('/lists/the-only-list-in-the-world/')
 
