@@ -72,3 +72,30 @@ class NewListTest(TestCase):
         response = self.client.post('/lists/new', data={'item_text': '새 아이템'})
         list_ = List.objects.first()
         self.assertRedirects(response, f'/lists/{list_.id}/')
+
+
+class NewItemTest(TestCase):
+    def test_can_save_a_POST_request_to_an_existing_list(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        self.client.post(
+                f'/lists/{correct_list.id}/add_item',
+                data={'item_text': '기존 리스트에 아이템 추가'}
+        )
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, '기존 리스트에 아이템 추가')
+        self.assertEqual(new_item.list, correct_list)
+
+    def test_redirects_to_live_view(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        response = self.client.post(
+                f'/lists/{correct_list.id}/add_item',
+                data={'item_text': '기존 리스트에 아이템 추가'}
+        )
+
+        self.assertRedirects(response, f'/lists/{correct_list.id}/')
